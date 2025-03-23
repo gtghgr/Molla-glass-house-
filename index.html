@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>মোল্লা গ্লাস হাউজ</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: #f7f7f7;
+            color: #333;
+            padding: 20px;
+            font-size: 16px;
+        }
+        header {
+            background-color: #2d3e50;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        header h1 {
+            font-size: 30px;
+            letter-spacing: 2px;
+        }
+        .container {
+            margin-top: 30px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+        }
+        .select-wrapper {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        .select-wrapper select {
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+            width: 45%;
+            font-size: 16px;
+        }
+        .add-button {
+            padding: 12px 20px;
+            background-color: #2d3e50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .add-button:hover {
+            background-color: #1e2a36;
+        }
+        .product-sheet {
+            background-color: #e6f0f9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-top: 20px;
+        }
+        .product-sheet h2 {
+            color: #2d3e50;
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th, td {
+            padding: 15px;
+            text-align: center;
+            border: 1px solid #ddd;
+        }
+        th {
+            background-color: #2d3e50;
+            color: white;
+        }
+        td {
+            background-color: #f9f9f9;
+        }
+        td.editable {
+            background-color: #ffffff;
+            cursor: pointer;
+        }
+        td .stock {
+            font-weight: bold;
+        }
+        .green {
+            background-color: #28a745;
+            color: white;
+        }
+        .yellow {
+            background-color: #ffc107;
+            color: black;
+        }
+        .red {
+            background-color: #dc3545;
+            color: white;
+        }
+        input[type="number"] {
+            width: 50px;
+            padding: 5px;
+            border-radius: 5px;
+            border: 1px solid #ddd;
+        }
+        .product-sheet button {
+            margin: 5px;
+            padding: 8px 15px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        .product-sheet button:hover {
+            background-color: #0056b3;
+        }
+        .product-sheet button:disabled {
+            background-color: #dcdcdc;
+            cursor: not-allowed;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>মোল্লা গ্লাস হাউজ</h1>
+</header>
+
+<div class="container">
+    <div class="select-wrapper">
+        <select id="company-select" onchange="loadCompany(this.value)">
+            <option value="">কোম্পানি নির্বাচন করুন</option>
+            <option value="Akij">আকিজ</option>
+            <option value="Nasir">নাছির</option>
+            <option value="Hardware">হার্ডওয়্যার</option>
+        </select>
+
+        <button class="add-button" onclick="addCompany()">যোগ করুন কোম্পানি</button>
+    </div>
+
+    <div class="company-list">
+        <h2>কোম্পানির নাম:</h2>
+        <ul id="company-list">
+            <li><button onclick="loadCompany('Akij')">আকিজ</button></li>
+            <li><button onclick="loadCompany('Nasir')">নাছির</button></li>
+            <li><button onclick="loadCompany('Hardware')">হার্ডওয়্যার</button></li>
+        </ul>
+    </div>
+
+    <div id="product-table-container"></div>
+
+    <button class="add-button" onclick="addProduct()">যোগ করুন প্রডাক্ট</button>
+</div>
+
+<script>
+    const companies = {
+        "Akij": [
+            { name: "প্রডাক্ট 1", size: "20kg", stock: 50, type: "কাচ", unit: "পিস", purchasePrice: 200 },
+            { name: "প্রডাক্ট 2", size: "15kg", stock: 30, type: "স্টোর", unit: "পিস", purchasePrice: 150 }
+        ],
+        "Nasir": [
+            { name: "প্রডাক্ট 1", size: "25kg", stock: 60, type: "কাচ", unit: "পিস", purchasePrice: 180 }
+        ],
+        "Hardware": [
+            { name: "প্রডাক্ট 1", size: "30kg", stock: 20, type: "স্টোর", unit: "পিস", purchasePrice: 250 }
+        ]
+    };
+
+    let currentCompany = null;
+
+    function addCompany() {
+        const companyName = prompt("নতুন কোম্পানির নাম লিখুন:");
+        if (companyName && !companies[companyName]) {
+            companies[companyName] = [];
+            const listItem = document.createElement("li");
+            const button = document.createElement("button");
+            button.textContent = companyName;
+            button.onclick = () => loadCompany(companyName);
+            listItem.appendChild(button);
+            document.getElementById("company-list").appendChild(listItem);
+        }
+    }
+
+    function loadCompany(company) {
+        currentCompany = company;
+        displayProductSheet(company);
+    }
+
+    function displayProductSheet(company) {
+        const products = companies[company];
+        let tableHTML = `
+            <div class="product-sheet">
+                <h2>${company} কোম্পানি প্রডাক্ট শীট</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>মালের নাম</th>
+                            <th>সাইজ</th>
+                            <th>স্টক</th>
+                            <th>ধরণ</th>
+                            <th>একক</th>
+                            <th>ক্রয় মূল্য</th>
+                            <th>আপডেট</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        products.forEach((product, index) => {
+            const stockClass = product.stock > 20 ? "green" : (product.stock > 5 ? "yellow" : "red");
+            tableHTML += `
+                <tr>
+                    <td class="editable">${product.name}</td>
+                    <td class="editable">${product.size}</td>
+                    <td class="stock ${stockClass}">${product.stock}</td>
+                    <td class="editable">${product.type}</td>
+                    <td class="editable">${product.unit}</td>
+                    <td class="editable">${product.purchasePrice}</td>
+                    <td>
+                        <input type="number" id="update-amount-${index}" value="0" min="0">
+                        <button onclick="updateStock(${index}, 'add')">+</button>
+                        <button onclick="updateStock(${index}, 'subtract')">-</button>
+                    </td>
+                </tr>
+            `;
+        });
+
+        tableHTML += `
+            </tbody>
+            </table>
+        </div>
+        `;
+        document.getElementById("product-table-container").innerHTML = tableHTML;
+    }
+
+    function updateStock(index, operation) {
+        const product = companies[currentCompany][index];
+        const updateAmount = parseInt(document.getElementById(`update-amount-${index}`).value);
+
+        if (!isNaN(updateAmount)) {
+            if (operation === 'add') {
+                product.stock += updateAmount;
+            } else if (operation === 'subtract' && product.stock >= updateAmount) {
+                product.stock -= updateAmount;
+            }
+            displayProductSheet(currentCompany);
+        }
+    }
+
+    function addProduct() {
+        companies[currentCompany].push({
+            name: "নতুন প্রডাক্ট",
+            size: "0kg",
+            stock: 0,
+            type: "নতুন",
+            unit: "পিস",
+            purchasePrice: 0
+        });
+        displayProductSheet(currentCompany);
+    }
+</script>
+
+</body>
+</html>
